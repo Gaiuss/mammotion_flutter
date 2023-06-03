@@ -1,27 +1,72 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_boost/flutter_boost.dart';
 
-void main() => runApp(const MyApp());
+import 'homePage.dart';
+import 'mine.dart';
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+void main() {
+  ///添加全局生命周期监听类
+  PageVisibilityBinding.instance.addGlobalObserver(AppLifecycleObserver());
+  CustomFlutterBinding();
+  runApp(MyApp());
+}
 
-  // This widget is the root of your application.
+class CustomFlutterBinding extends WidgetsFlutterBinding
+    with BoostFlutterBinding {}
+
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  ///路由表
+  Map<String, FlutterBoostRouteFactory> routerMap = {
+    'homePage': (settings, uniqueId) {
+      return CupertinoPageRoute(
+        settings: settings,
+        builder: (_) {
+          Map<String, Object> map = settings.arguments as Map<String, Object>;
+          String data = map['data'] as String;
+          return homePage();
+        },
+      );
+    },
+    'minePage': (settings, uniqueId) {
+      return CupertinoPageRoute(
+          settings: settings,
+          builder: (_) {
+            Map<String, Object> map = settings.arguments as Map<String, Object>;
+            String data = map['data'] as String;
+            return minePage(
+              data: data,
+            );
+          });
+    },
+  };
+
+  Route<dynamic> routeFactory(RouteSettings settings, String uniqueId) {
+    FlutterBoostRouteFactory func =
+        routerMap[settings.name] as FlutterBoostRouteFactory;
+    return func(settings, uniqueId) as Route<dynamic>;
+  }
+
+  Widget appBuilder(Widget home) {
+    return MaterialApp(
+      home: home,
+      debugShowCheckedModeBanner: false,
+      builder: (_, __) {
+        return home;
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or press Run > Flutter Hot Reload in a Flutter IDE). Notice that the
-        // counter didn't reset back to zero; the application is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+    return FlutterBoostApp(
+      routeFactory as FlutterBoostRouteFactory,
+      appBuilder: appBuilder,
     );
   }
 }
@@ -108,5 +153,43 @@ class _MyHomePageState extends State<MyHomePage> {
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+}
+
+class AppLifecycleObserver with GlobalPageVisibilityObserver {
+  @override
+  void onBackground(Route route) {
+    super.onBackground(route);
+    print("AppLifecycleObserver - onBackground");
+  }
+
+  @override
+  void onForeground(Route route) {
+    super.onForeground(route);
+    print("AppLifecycleObserver - onForground");
+  }
+
+  @override
+  void onPagePush(Route route) {
+    super.onPagePush(route);
+    print("AppLifecycleObserver - onPagePush");
+  }
+
+  @override
+  void onPagePop(Route route) {
+    super.onPagePop(route);
+    print("AppLifecycleObserver - onPagePop");
+  }
+
+  @override
+  void onPageHide(Route route) {
+    super.onPageHide(route);
+    print("AppLifecycleObserver - onPageHide");
+  }
+
+  @override
+  void onPageShow(Route route) {
+    super.onPageShow(route);
+    print("AppLifecycleObserver - onPageShow");
   }
 }
